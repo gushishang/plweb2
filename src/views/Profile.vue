@@ -111,7 +111,7 @@
                   v-model:value="comment"
                   style="text-align: left"
                   type="text"
-                  placeholder="发布一条友善的言论"
+                  :placeholder="t('comments.placeholder')"
                   show-count
                   :maxlength="300"
                   :loading="isLoading"
@@ -137,11 +137,14 @@ import Block from "../components/blocks/Block.vue";
 import postComment from "@services/postComment.ts";
 import BiLayout from "../layout/BiLayout.vue";
 import "../layout/BiLayout.css";
-import { getCoverUrl, getUserUrl } from "@services/utils.ts";
+import {
+  getCoverUrl,
+  getUserUrl,
+  EncodeAPITargetLink,
+} from "@services/utils.ts";
 import { useI18n } from "vue-i18n";
-import { EncodeAPITargetLink } from "@services/utils.ts";
 import showActionSheet from "@popup/actionSheet.ts";
-import Emitter from "@services/eventEmitter.ts";
+import { showMessage } from "@popup/naiveui";
 
 const { t } = useI18n();
 let comment = ref("");
@@ -261,10 +264,10 @@ function copy(text: string) {
   navigator.clipboard
     .writeText(text)
     .then(() => {
-      Emitter.emit("info", "copied", 1);
+      showMessage("info", "copied", { duration: 1000 });
     })
-    .catch((e) => {
-      Emitter.emit("error", "failed to copy text", 2, e);
+    .catch(() => {
+      showMessage("error", "failed to copy text", { duration: 2000 });
     });
 }
 
@@ -300,7 +303,6 @@ function copyUser() {
 }
 .container {
   text-align: center;
-  /* 保证容器可伸展并允许内部滚动区域使用 min-height:0 */
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -319,18 +321,16 @@ function copyUser() {
   width: 98%;
   margin: 5px;
   flex: 1 1 auto;
-  min-height: 0; /* 关键：允许子元素正确触发 overflow */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 5px;
   overflow-y: auto;
-  padding-bottom: 50px;
-  padding: 10px;
+  padding: 10px 10px 50px;
   background-color: rgba(128, 128, 128, 0.05);
   border-radius: 6px;
 }
 
-/* 让 n-tabs 和 tab-pane 在容器内也能伸展 */
 .container .n-tabs {
   flex: 1 1 auto;
   min-height: 0;

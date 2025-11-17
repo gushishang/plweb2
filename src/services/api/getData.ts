@@ -19,6 +19,7 @@ import { getPath } from "../utils.ts";
  * @param body - 作为JSON发送的请求负载。 The request payload to be sent as JSON.
  * @returns 一个Promise，该Promise将解析为响应数据，或者如果中断了流，则解析为结果的钩子。 A promise that resolves with the response data, or with the result of the hooks if they interrupt the flow.
  */
+// eslint-disable-next-line max-lines-per-function
 export async function getData(path: string, body: unknown) {
   const userInfo = sm.getObj("userAuthInfo");
   if (userInfo.status === "empty" || userInfo.status === "expired") {
@@ -51,7 +52,9 @@ export async function getData(path: string, body: unknown) {
         // 而Response.data中的错误是API本身的错误（如权限不足、参数错误等），需要在调用API时处理
         // This error handling only deals with non-2xx errors from the API itself, and server issues.
         // Errors in Response.data are API-specific errors (like insufficient permissions, parameter errors
-        Emitter.emit("error", "无法与服务器通讯，请稍候再试", 3);
+        showMessage("error", "无法与服务器通讯，请稍候再试", {
+          duration: 5000,
+        });
       });
     }
     return response.json().then((data) => {
@@ -87,6 +90,7 @@ export async function getData(path: string, body: unknown) {
  * @param arg2 - 密码或者API认证码，取决于IsToken。The password or API auth code, depending on `is_token`.
  * @returns 成功时返回服务器响应数据，失败时发出错误事件。A promise that resolves to the server response data if successful, or emits an error event on failure.
  */
+// eslint-disable-next-line max-lines-per-function
 export async function login(
   arg1: string | null,
   arg2: string | null,
@@ -129,18 +133,21 @@ export async function login(
     window.$ErrorLogger.writeLog(Device);
     if (!response.ok) {
       return response.json().then(() => {
-        Emitter.emit("error", "无法与服务器通讯，请稍候再试", 3);
+        showMessage("error", "无法与服务器通讯，请稍候再试", {
+          duration: 5000,
+        });
       });
     }
     return response.json().then((data) => {
-      sm.setObj(
-        "userAuthInfo",
-        {
-          token: data.Token,
-          authCode: data.AuthCode,
-        },
-        30 * 24 * 60 * 60 * 1000,
-      );
+      if (data.Token != null && data.AuthCode != null)
+        sm.setObj(
+          "userAuthInfo",
+          {
+            token: data.Token,
+            authCode: data.AuthCode,
+          },
+          30 * 24 * 60 * 60 * 1000,
+        );
       messageRef.destroy();
       return data;
     });

@@ -14,8 +14,9 @@ import { NGrid, NGi } from "naive-ui";
 import Works from "./item.vue";
 import { ref } from "vue";
 import { getData } from "@services/api/getData.ts";
-import Emitter from "@services/eventEmitter.ts";
+import { showMessage } from "@popup/naiveui";
 import infiniteScroll from "../utils/infiniteScroll.vue";
+import { useI18n } from "vue-i18n";
 
 interface Item {
   ID: string;
@@ -29,6 +30,8 @@ const { q } = defineProps({
   row: Number,
   q: Object,
 });
+
+const { t } = useI18n();
 
 const loading = ref(true);
 const items = ref<Item[]>([]);
@@ -71,7 +74,8 @@ async function handleLoad() {
     },
   });
   if (getProjectsRes.Data.$values.length < 24) {
-    if (!hasInformed.value) Emitter.emit("warning", "没有更多了", 1);
+    if (!hasInformed.value)
+      showMessage("warning", t("ui.messages.noMore"), { duration: 1000 });
     noMore.value = true;
   }
   skip.value += 24;

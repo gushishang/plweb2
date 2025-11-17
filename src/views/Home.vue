@@ -45,7 +45,7 @@
             :key="block.Subject"
           >
             <div class="block">
-              <BlockAndActivity
+              <TopicBlock
                 v-if="
                   block.$type.startsWith('Quantum.Models.Contents.TopicBlock')
                 "
@@ -83,11 +83,11 @@ import sm from "@storage/index.ts";
 import { useI18n } from "vue-i18n";
 import Emitter from "@services/eventEmitter";
 import { useResponsive } from "../layout/useResponsive.ts";
-import login from "@api/login.ts";
+import { login } from "@api/getData";
 import Header from "../components/utils/Header.vue";
 import Footer from "../components/utils/Footer.vue";
 import Block from "../components/blocks/Block.vue";
-import BlockAndActivity from "../components/blocks/BlockAndActivity.vue";
+import TopicBlock from "../components/blocks/TopicBlock.vue";
 import { showLoginModel } from "@popup/index";
 
 const isLoading = ref(true);
@@ -117,14 +117,20 @@ const user =
 const { blockItemsPerRow, maxProjectsPerBlock } = useResponsive();
 
 onMounted(async () => {
-  const userInfo = sm.getObj("userInfo");
-  if (userInfo.status === "success" && userInfo.value?.loginStatus === true) {
-    const res = await login(userInfo.value.token, userInfo.value.authCode);
-    loadPageData(res);
-  } else {
-    const res = await login(null, null);
-    loadPageData(res);
+  const ua = sm.getObj("userAuthInfo");
+  if (ua.status === "success" && ua.value?.token != null) {
+    const res = await login(ua.value.token, ua.value.authCode, true);
+    user.value = {
+      coins: res.Data.User.Gold,
+      gems: res.Data.User.Diamond,
+      level: res.Data.User.Level,
+      username: res.Data.User.Nickname,
+      avatarUrl: getUserUrl(res.Data.User),
+      ID: res.Data.User.ID,
+    };
   }
+  const res = await login(null, null);
+  loadPageData(res);
 });
 
 onActivated(() => {
@@ -150,15 +156,16 @@ async function loadPageData(response: any) {
   Emitter.emit("updateTagConfig", response.Data.ContentTags);
   blocks.value = [...response.Data.Library.Blocks];
   const userData = response.Data.User;
-  user.value.avatarUrl.length >= 30 ||
-    (user.value = {
+  if (user.value.avatarUrl.length < 30) {
+    user.value = {
       coins: userData.Gold,
       gems: userData.Diamond,
       level: userData.Level,
       username: userData.Nickname || t("user.clickToLogin"),
       avatarUrl: getUserUrl(userData),
       ID: userData.ID,
-    });
+    };
+  }
 
   window.$Logger.logPageView({
     pageLink: "/Account/Login/",

@@ -14,12 +14,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { defineComponent } from "vue";
-defineComponent({
-  name: "BiLayout",
-});
-</script>
+<script setup lang="ts"></script>
 <style scoped>
 .basic-layout {
   position: relative;

@@ -11,7 +11,7 @@
         <!-- 阻止冒泡，使得只有点击遮罩才关闭 -->
         <!-- Prevents bubbling, so that only clicking on the overlay will close it -->
         <p class="username">{{ name }}</p>
-        <p class="snt">{{ snt || "这个人很神秘，什么也么有写" }}</p>
+        <p class="snt">{{ snt || t("user.noSignature") }}</p>
       </div>
       <div class="stats">
         <div class="stat-item">
@@ -59,10 +59,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { getData } from "@services/api/getData.ts";
-import Emitter from "@services/eventEmitter";
 import { getUserUrl, getPath } from "@services/utils";
 import storageManager from "@services/storage/index.ts";
 import { useI18n } from "vue-i18n";
+import { showMessage } from "@popup/naiveui";
 
 const props = defineProps<{
   userid: string;
@@ -120,13 +120,13 @@ async function followUser() {
     Action: 1,
   });
   if (re.Status === 200) {
-    Emitter.emit("success", "关注成功", 2);
+    showMessage("success", t("ui.messages.followSuccess"));
     isFollowing.value = true;
   } else {
     if (re.Status === 400 && re.Data === "TargetID") {
-      Emitter.emit("error", t("userCard.cantFollowYourself"), 2);
+      showMessage("error", t("userCard.cantFollowYourself"));
     } else {
-      Emitter.emit("error", re.Message, 2);
+      showMessage("error", re.Message);
     }
   }
   window.$Logger.logEvent({
@@ -143,10 +143,10 @@ async function unfollowUser() {
     Action: 0,
   });
   if (re.Status === 200) {
-    Emitter.emit("success", "取关成功", 2);
+    showMessage("success", t("ui.messages.unfollowSuccess"));
     isFollowing.value = false;
   } else {
-    Emitter.emit("error", re.Message, 2);
+    showMessage("error", re.Message);
   }
   window.$Logger.logEvent({
     category: "Social",

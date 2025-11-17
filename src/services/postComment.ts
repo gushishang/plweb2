@@ -1,7 +1,7 @@
 import { getData } from "./api/getData";
-import Emitter from "./eventEmitter";
 import type { Ref } from "vue";
 import i18n from "./i18n/i18n";
+import { showMessage } from "@popup/naiveui";
 
 export default async function postComment(
   comment: Ref<string>,
@@ -11,6 +11,7 @@ export default async function postComment(
   replyID: Ref<string>,
   updateTrigger: Ref<number>,
 ) {
+  const t = i18n.global.t;
   try {
     if (isLoading.value) return;
     isLoading.value = true;
@@ -40,11 +41,11 @@ export default async function postComment(
     ) {
       const index = Number(response.Message.split("|")[1]);
       const blockedMessage = comment.value.slice(index, 10);
-      Emitter.emit(
-        "error",
-        `您输入的内容“...${blockedMessage}...”中包含不适合词句`,
-        1,
+      const errorMsg = t("errors.contentFilter").replace(
+        "{word}",
+        blockedMessage,
       );
+      showMessage("error", errorMsg, { duration: 5000 });
     }
   } catch (e) {
     if (!(e === "频率过快")) console.error(e);
