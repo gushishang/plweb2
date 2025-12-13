@@ -11,9 +11,9 @@
         <div>
           <img :src="returnImagePath" class="return" @click="goBack" />
           <div
+            v-richText="() => parseInline(data.Subject)"
             class="title"
             @click="copySubject"
-            v-html="parseInline(data.Subject)"
           ></div>
           <div class="tagContainer">
             <Tag
@@ -78,8 +78,8 @@
                     {{ data.User.Nickname }}
                   </p>
                   <p
+                    v-richText="() => parseInline(data.User.Signature)"
                     style="color: gray; margin: 0%; width: 100%"
-                    v-html="parseInline(data.User.Signature)"
                   ></p>
                 </div>
               </div>
@@ -103,7 +103,17 @@
                   {{ t("expeSummary.intro") }}
                 </h3>
 
-                <div class="intro" v-html="parse(data.Description)"></div>
+                <div
+                  v-richText="
+                    () =>
+                      parse(
+                        Array.isArray(data.Description)
+                          ? data.Description.join('\n')
+                          : data.Description,
+                      )
+                  "
+                  class="intro"
+                ></div>
                 <div>
                   {{ t("expeSummary.wordCount") }}
                 </div>
@@ -155,8 +165,8 @@ import { getData } from "@services/api/getData.ts";
 import { NTabs, NTabPane, NInput, NButton } from "naive-ui";
 import Tag from "../components/utils/TagLarger.vue";
 import MessageList from "../components/messages/MessageList.vue";
-import parse from "@services/advancedParser.ts";
-import parseInline from "@services/commonParser.ts";
+import parse from "@services/pltxt2htm/advancedParser";
+import parseInline from "@services/pltxt2htm/commonParser";
 import showUserCard from "@popup/userProfileDialog.ts";
 import postComment from "@services/postComment.ts";
 import { getCoverUrl, getUserUrl, getPath } from "@services/utils.ts";
