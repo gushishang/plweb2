@@ -4,7 +4,7 @@ import hljs from "highlight.js";
 import dompurify from "dompurify";
 // import renderMathInElement from "katex/contrib/auto-render/auto-render.js";
 
-async function fixedadvParser(text: string, host: string): Promise<string> {
+async function advancedParser(text: string, host: string): Promise<string> {
   const wasmInstance = await getWasmInstance();
   const instanceAny: any = wasmInstance;
   if (!instanceAny.__advanced_parser_fn) {
@@ -24,7 +24,7 @@ async function fixedadvParser(text: string, host: string): Promise<string> {
 }
 
 async function parse(source: string) {
-  const rawHtml = await fixedadvParser(source, import.meta.env.VITE_ROOT_URL);
+  const rawHtml = await advancedParser(source, import.meta.env.VITE_ROOT_URL);
   console.log(rawHtml)
   if (!rawHtml) return "";
   const tempDiv = document.createElement("div");
