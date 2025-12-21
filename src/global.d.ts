@@ -1,6 +1,6 @@
 import type { MessageReactive as _MessageReactive } from "naive-ui";
 import type { Logger } from "./services/api/logWriter";
-import type { ErrorLogger } from "./services/errorLogger";
+import type ErrorLogger from "./services/errorLogger";
 
 declare global {
   interface Window {
@@ -8,5 +8,7 @@ declare global {
     $ErrorLogger: ErrorLogger;
   }
 }
+
+export {};
 
 // global augmentations (window helpers are declared above)

@@ -47,6 +47,31 @@ export default defineConfig({
 
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        runtimeCaching: [
+          {
+            urlPattern: /^\/static\//,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "static-images",
+              expiration: {
+                maxEntries: 10000,
+                maxAgeSeconds: 300 * 24 * 60 * 60, // 300 days
+              },
+            },
+          },
+          {
+            urlPattern: /^\/api\//,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 3 * 24 * 60 * 60, // 3 day
+              },
+            },
+          },
+        ],
       },
     }),
   ],

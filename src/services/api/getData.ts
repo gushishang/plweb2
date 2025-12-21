@@ -2,7 +2,6 @@ import { beforeRequest, afterRequest } from "./Interceptor.ts";
 import sm from "@storage/index.ts";
 import i18n from "@i18n/index.ts";
 import { getDeviceInfo, getVisitorId } from "./getDevice.ts";
-import { removeToken } from "../utils.ts";
 import { showMessage } from "@popup/naiveui.ts";
 import { getPath } from "../utils.ts";
 
@@ -42,8 +41,18 @@ export async function getData(path: string, body: unknown) {
     },
   }).then((response) => {
     if (!response.ok) {
-      window.$ErrorLogger.writeLog(
-        `API请求失败: ${path}, 状态码: ${response.status}`,
+      if (path !== "/Users/GetUser") {
+        window.$ErrorLogger.addBreadcrumb("api", `${path} failed with status ${response.status}`, {
+          statusCode: response.status,
+          path,
+        });
+      }
+      window.$ErrorLogger.captureApiError(
+        "POST",
+        path,
+        response.status,
+        undefined,
+        body
       );
       return response.json().then(() => {
         // 这里的错误处理仅处理API本身非2xx的错误，及服务器本身出了问题
@@ -56,12 +65,21 @@ export async function getData(path: string, body: unknown) {
       });
     }
     return response.json().then((data) => {
+      if (path !== "/Users/GetUser") {
+        window.$ErrorLogger.addBreadcrumb("api", `${path} success`, {
+          statusCode: 200,
+          path,
+          dataStatus: data.Status,
+        });
+      }
+      
       if (data.Status !== 200) {
-        window.$ErrorLogger.writeLog(
-          removeToken({
-            res: data,
-            info: userInfo,
-          }),
+        window.$ErrorLogger.captureApiError(
+          "POST",
+          path,
+          data.Status,
+          data,
+          body
         );
       }
       const afterRes = afterRequest(data);
